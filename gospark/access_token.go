@@ -70,6 +70,8 @@ func (s *AccessTokenService) GetAccessToken() (*OAuthResponse, error) {
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	oauthResp := &OAuthResponse{}
 	err = json.NewDecoder(resp.Body).Decode(oauthResp)
 	if err != nil {
@@ -110,11 +112,7 @@ func (s *AccessTokenService) ListAllAccessTokens() error {
 		return err
 	}
 
-	req.SetBasicAuth(UserName, Password)
-
-	if err != nil {
-		return err
-	}
+	req.SetBasicAuth(s.OaRequest.UserName, s.OaRequest.Password)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -129,7 +127,40 @@ func (s *AccessTokenService) ListAllAccessTokens() error {
 		fmt.Println(err)
 		return err
 	}
-	fmt.Println(s.ATokenList.Tokens)
 
 	return nil
+}
+
+type DeleteAccessTokenResponse struct {
+	Status bool `json:"ok"`
+}
+
+func (s *AccessTokenService) DeleteAccessToken(a *AccessToken) (
+	*DeleteAccessTokenResponse, error) {
+
+	Endpoint := "/access_tokens/" + a.Token
+	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl, APIVersion,
+		Endpoint})
+
+	req, err := http.NewRequest("DELETE", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.SetBasicAuth(s.OaRequest.UserName, s.OaRequest.Password)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	delTokenResp := &DeleteAccessTokenResponse{}
+	err = json.NewDecoder(resp.Body).Decode(delTokenResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return delTokenResp, nil
 }
