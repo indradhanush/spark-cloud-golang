@@ -13,4 +13,13 @@ func main() {
 	fmt.Println(oauthToken.AccessToken)
 	fmt.Println(oauthToken.TokenType)
 	fmt.Println(oauthToken.ExpiresIn)
+
+	aTokenService := gospark.NewAccessTokenService()
+	aTokenService.ListAllAccessTokens()
+	fmt.Println(aTokenService.ATokenList)
+
+	for _, token := range aTokenService.ATokenList.Tokens {
+		fmt.Println(token.Token, token.ExpiresAt, token.Client)
+	}
+
 }
