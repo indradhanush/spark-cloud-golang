@@ -24,14 +24,15 @@ type OAuthResponse struct {
 // Get returns an AccessToken in the form of a OAuthResponse object.
 func (oreq *OAuthRequest) Get() (*OAuthResponse, error) {
 
-	u := "https://api.spark.io/oauth/token"
+	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl: BaseUrl,
+		Endpoint: "/oauth/token"})
 
 	form := url.Values{}
 	form.Set("grant_type", oreq.GrantType)
 	form.Set("username", oreq.UserName)
 	form.Set("password", oreq.Password)
 
-	req, err := http.NewRequest("POST", u, strings.NewReader(form.Encode()))
+	req, err := http.NewRequest("POST", urlStr, strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(BasicAuthId, BasicAuthPassword)
 	if err != nil {
