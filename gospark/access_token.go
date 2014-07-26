@@ -104,8 +104,8 @@ func NewAccessTokenList() *AccessTokenList {
 
 func (s *AccessTokenService) ListAllAccessTokens() error {
 
-	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl: BaseUrl,
-		APIVersion: APIVersion, Endpoint: "/access_tokens"})
+	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl, APIVersion,
+		"/access_tokens"})
 
 	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
