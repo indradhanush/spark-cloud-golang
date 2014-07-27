@@ -24,14 +24,15 @@ func (e ErrorResponse) Error() string {
 
 	// Just hoping that there isn't any error code of 0
 	if e.Code != 0 {
-		errorMsg = fmt.Sprintf("Error Code: %v Error:%v", e.Code, e.Err)
+		errorMsg = fmt.Sprintf(
+			"Error Code: %v, Error: %v, ", e.Code, e.Err)
 	}
 	if e.ErrorDescription != "" {
-		errorMsg += fmt.Sprintf("Error Description:%v",
+		errorMsg += fmt.Sprintf("Error Description: %v",
 			e.ErrorDescription)
 	}
 	if e.Info != "" {
-		errorMsg += fmt.Sprint("Info:", e.Info)
+		errorMsg += fmt.Sprint("Info: %v", e.Info)
 	}
 
 	return errorMsg

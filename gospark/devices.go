@@ -19,12 +19,14 @@ import (
 type Device struct {
 	ID        string
 	Functions map[string]*DeviceFunction
+	Variables map[string]*DeviceVariable
 }
 
 func NewDevice(id string) *Device {
 	device := &Device{}
 	device.ID = id
 	device.Functions = make(map[string]*DeviceFunction)
+	device.Variables = make(map[string]*DeviceVariable)
 	return device
 }
 
@@ -54,13 +56,11 @@ func (s *Device) InvokeFunction(dFunc *DeviceFunction,
 
 	form := url.Values{}
 
-	if t, ok := i.(*OAuthResponse); ok {
-		form.Set("access_token", t.AccessToken)
-	} else if t, ok := i.(*AccessToken); ok {
-		form.Set("access_token", t.Token)
-	} else {
-		return nil, &ApiError{"Pass either OAuthResponse, or AccessToken"}
+	token, err := ParseToken(i)
+	if err != nil {
+		return nil, err
 	}
+	form.Set("access_token", token)
 
 	argsList := ""
 	for i := 0; i < len(dFunc.Args)-1; i++ {
@@ -102,13 +102,72 @@ type DeviceVariable struct {
 	Name string
 }
 
-func NewDeviceVariable(name string) *DeviceVariable {
-	deviceVariable := &DeviceVariable{}
+func (s *Device) NewDeviceVariable(name string) {
+	dVar := &DeviceVariable{}
 
 	// Truncating the string upto 12 chars.
-	if len(name) > 12 {
-		name = name[:12]
+	truncName := name
+	if len(name) > MaxVariableLen {
+		truncName = name[:MaxVariableLen]
 	}
-	deviceVariable.Name = name
-	return deviceVariable
+	dVar.Name = truncName
+	s.Variables[name] = dVar
+}
+
+type CoreInfo struct {
+	LastApp   string `json:"last_app, omitempty"`
+	LastHeard string `json:"last_heard, omitempty"`
+	Connected bool   `json:"connected, omitempty"`
+	DeviceID  string `json:"deviceID, omitempty"`
+}
+
+type GetDeviceVariableResponse struct {
+	Cmd  string `json:"cmd, omitempty"`
+	Name string `json:"name, omitempty"`
+	// Result can be a string, int, float or bool. Not the best
+	// way to do this here, but I'm sorry about this. Ugly I will agree.
+	Result   interface{} `json:"result, omitempty"`
+	CoreInfo CoreInfo    `json:"coreInfo, omitempty"`
+}
+
+func (d *Device) GetDeviceVariable(dVar *DeviceVariable, i interface{}) (
+	*GetDeviceVariableResponse, error) {
+
+	endpoint := "/devices/" + d.ID + "/" + dVar.Name
+
+	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl, APIVersion, endpoint})
+
+	form := url.Values{}
+
+	token, err := ParseToken(i)
+	if err != nil {
+		return nil, err
+	}
+	form.Set("access_token", token)
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	var response struct {
+		GetDeviceVariableResponse
+		ErrorResponse
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+	if response.Err != "" {
+		return nil, response.ErrorResponse
+	}
+	return &response.GetDeviceVariableResponse, nil
 }
