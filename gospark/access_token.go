@@ -2,7 +2,6 @@ package gospark
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -124,7 +123,6 @@ func (s *AccessTokenService) ListAllAccessTokens() error {
 	s.ATokenList = NewAccessTokenList()
 	err = json.NewDecoder(resp.Body).Decode(&s.ATokenList.Tokens)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
