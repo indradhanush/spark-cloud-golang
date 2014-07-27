@@ -2,6 +2,7 @@ package gospark
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -137,13 +138,13 @@ func (d *Device) GetDeviceVariable(dVar *DeviceVariable, i interface{}) (
 
 	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl, APIVersion, endpoint})
 
-	form := url.Values{}
-
 	token, err := ParseToken(i)
 	if err != nil {
 		return nil, err
 	}
-	form.Set("access_token", token)
+
+	urlStr += fmt.Sprintf("?access_token=%v", token)
+
 	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return nil, err
