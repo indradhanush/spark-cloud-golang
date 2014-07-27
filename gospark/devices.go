@@ -7,27 +7,24 @@ import (
 	"strings"
 )
 
-type DeviceService struct {
-	Device       *Device
-	FunctionList []*DeviceFunction
-}
+// type DeviceService struct {
+// 	DeviceList []*Device
+// }
 
-func NewDeviceService(id string) *DeviceService {
-	dService := &DeviceService{}
-	dService.Device = NewDevice(id)
-	return dService
-}
-
-func (s *DeviceService) AddFunction(dFunc *DeviceFunction) {
-	s.FunctionList = append(s.FunctionList, dFunc)
-}
+// func NewDeviceService() *DeviceService {
+// 	dService := &DeviceService{}
+// 	return dService
+// }
 
 type Device struct {
-	ID string
+	ID        string
+	Functions map[string]*DeviceFunction
 }
 
 func NewDevice(id string) *Device {
-	device := &Device{ID: id}
+	device := &Device{}
+	device.ID = id
+	device.Functions = make(map[string]*DeviceFunction)
 	return device
 }
 
@@ -36,9 +33,9 @@ type DeviceFunction struct {
 	Args []string
 }
 
-func NewDeviceFunction(name string, args []string) *DeviceFunction {
-	deviceFunction := &DeviceFunction{name, args}
-	return deviceFunction
+func (s *Device) NewDeviceFunction(name string, args []string) {
+	dFunc := &DeviceFunction{name, args}
+	s.Functions[name] = dFunc
 }
 
 type InvokeFunctionResponse struct {
@@ -48,10 +45,10 @@ type InvokeFunctionResponse struct {
 	ReturnValue int32  `json:connected`
 }
 
-func (s *DeviceService) InvokeFunction(dFunc *DeviceFunction,
+func (s *Device) InvokeFunction(dFunc *DeviceFunction,
 	i interface{}) (*InvokeFunctionResponse, error) {
 
-	endpoint := "/devices/" + s.Device.ID + "/" + dFunc.Name
+	endpoint := "/devices/" + s.ID + "/" + dFunc.Name
 	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl, APIVersion,
 		endpoint})
 
@@ -99,4 +96,19 @@ func (s *DeviceService) InvokeFunction(dFunc *DeviceFunction,
 		return nil, response.ErrorResponse
 	}
 	return &response.InvokeFunctionResponse, nil
+}
+
+type DeviceVariable struct {
+	Name string
+}
+
+func NewDeviceVariable(name string) *DeviceVariable {
+	deviceVariable := &DeviceVariable{}
+
+	// Truncating the string upto 12 chars.
+	if len(name) > 12 {
+		name = name[:12]
+	}
+	deviceVariable.Name = name
+	return deviceVariable
 }
