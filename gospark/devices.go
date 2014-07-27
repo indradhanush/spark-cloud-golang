@@ -85,10 +85,18 @@ func (s *DeviceService) InvokeFunction(dFunc *DeviceFunction,
 	}
 
 	defer resp.Body.Close()
-	invokeFumcResp := &InvokeFunctionResponse{}
-	err = json.NewDecoder(resp.Body).Decode(invokeFumcResp)
+
+	var response struct {
+		InvokeFunctionResponse
+		ErrorResponse
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}
-	return invokeFumcResp, nil
+	if response.Err != "" {
+		return nil, response.ErrorResponse
+	}
+	return &response.InvokeFunctionResponse, nil
 }
