@@ -17,12 +17,14 @@ import (
 // 	return dService
 // }
 
+// Device is a representation of a Spark Core.
 type Device struct {
 	ID        string
 	Functions map[string]*DeviceFunction
 	Variables map[string]*DeviceVariable
 }
 
+// NewDevice is a constructor for Device.
 func NewDevice(id string) *Device {
 	device := &Device{}
 	device.ID = id
@@ -31,16 +33,21 @@ func NewDevice(id string) *Device {
 	return device
 }
 
+// DeviceFunction is a representation of a function.
 type DeviceFunction struct {
 	Name string
 	Args []string
 }
 
+// NewDeviceFunction is a constuctor for DeviceFunction that also
+// links the function to a Device object.
 func (s *Device) NewDeviceFunction(name string, args []string) {
 	dFunc := &DeviceFunction{name, args}
 	s.Functions[name] = dFunc
 }
 
+// InvokeFunctionResponse is the representation of a response when a
+// particular function is invoked via the REST API.
 type InvokeFunctionResponse struct {
 	DeviceID    string `json:"id"`
 	Name        string `json:name`
@@ -48,6 +55,7 @@ type InvokeFunctionResponse struct {
 	ReturnValue int32  `json:connected`
 }
 
+// InvokeFunction is used to Invoke a DeviceFunction instance.
 func (s *Device) InvokeFunction(dFunc *DeviceFunction,
 	i interface{}) (*InvokeFunctionResponse, error) {
 
@@ -99,10 +107,14 @@ func (s *Device) InvokeFunction(dFunc *DeviceFunction,
 	return &response.InvokeFunctionResponse, nil
 }
 
+// DeviceVariable is a representation of a Variable that can be
+// associated with a device.
 type DeviceVariable struct {
 	Name string
 }
 
+// NewDeviceVariable is a constructor for DeviceVariable and links it
+// to a Device object.
 func (s *Device) NewDeviceVariable(name string) {
 	dVar := &DeviceVariable{}
 
@@ -115,6 +127,7 @@ func (s *Device) NewDeviceVariable(name string) {
 	s.Variables[name] = dVar
 }
 
+// CoreInfo is a representation of the json struct coreInfo.
 type CoreInfo struct {
 	LastApp   string `json:"last_app, omitempty"`
 	LastHeard string `json:"last_heard, omitempty"`
@@ -122,6 +135,8 @@ type CoreInfo struct {
 	DeviceID  string `json:"deviceID, omitempty"`
 }
 
+// GetDeviceVariableResponse is a representation of the response
+// received on doing a GET on a Device Variable.
 type GetDeviceVariableResponse struct {
 	Cmd  string `json:"cmd, omitempty"`
 	Name string `json:"name, omitempty"`
@@ -131,6 +146,8 @@ type GetDeviceVariableResponse struct {
 	CoreInfo CoreInfo    `json:"coreInfo, omitempty"`
 }
 
+// GetDeviceVariable is the method to GET the value of a particular
+// Device Variable.
 func (d *Device) GetDeviceVariable(dVar *DeviceVariable, i interface{}) (
 	*GetDeviceVariableResponse, error) {
 
