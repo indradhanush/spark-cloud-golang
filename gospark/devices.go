@@ -41,9 +41,9 @@ type DeviceFunction struct {
 
 // NewDeviceFunction is a constuctor for DeviceFunction that also
 // links the function to a Device object.
-func (s *Device) NewDeviceFunction(name string, args []string) {
+func (d *Device) NewDeviceFunction(name string, args []string) {
 	dFunc := &DeviceFunction{name, args}
-	s.Functions[name] = dFunc
+	d.Functions[name] = dFunc
 }
 
 // InvokeFunctionResponse is the representation of a response when a
@@ -56,10 +56,10 @@ type InvokeFunctionResponse struct {
 }
 
 // InvokeFunction is used to Invoke a DeviceFunction instance.
-func (s *Device) InvokeFunction(dFunc *DeviceFunction,
+func (d *Device) InvokeFunction(dFunc *DeviceFunction,
 	i interface{}) (*InvokeFunctionResponse, error) {
 
-	endpoint := "/devices/" + s.ID + "/" + dFunc.Name
+	endpoint := "/devices/" + d.ID + "/" + dFunc.Name
 	urlStr := GetCompleteEndpointUrl(&APIUrl{BaseUrl, APIVersion,
 		endpoint})
 
@@ -115,7 +115,7 @@ type DeviceVariable struct {
 
 // NewDeviceVariable is a constructor for DeviceVariable and links it
 // to a Device object.
-func (s *Device) NewDeviceVariable(name string) {
+func (d *Device) NewDeviceVariable(name string) {
 	dVar := &DeviceVariable{}
 
 	// Truncating the string upto 12 chars.
@@ -124,7 +124,7 @@ func (s *Device) NewDeviceVariable(name string) {
 		truncName = name[:MaxVariableLen]
 	}
 	dVar.Name = truncName
-	s.Variables[name] = dVar
+	d.Variables[name] = dVar
 }
 
 // CoreInfo is a representation of the json struct coreInfo.
